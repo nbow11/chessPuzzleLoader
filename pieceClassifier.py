@@ -58,7 +58,7 @@ if not os.path.isfile(f"CNN_models/{file_name}"):
         tf.keras.layers.Dense(100, activation="relu"),
 
         # dropout regularisation to lower variance
-        tf.keras.layers.Dropout(0.2),
+        # tf.keras.layers.Dropout(0.1),
         tf.keras.layers.Dense(7, activation="softmax")
     ])
 
@@ -69,7 +69,7 @@ if not os.path.isfile(f"CNN_models/{file_name}"):
     # train the model
     trained_model = model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
 
-    model.save("pieceClassifierModel.h5")
+    model.save("CNN_models/pieceClassifierModel.h5")
 
 # saved trained model
 loaded_model = tf.keras.models.load_model("CNN_models/pieceClassifierModel.h5")

@@ -5,52 +5,64 @@ from colourClassifier import predict_image_colour
 from PIL import Image
 import pprint
 
-# Open the image
-img = Image.open("exampleImages/handDrawn.jpg").convert("RGB")
+RANK_LENGTH, FILE_LENGTH = 8, 8
 
-# Get the width and height of the image
-width, height = img.size
+image_path = "exampleImages/bookPuzzle.png"
 
-# Calculate the size of each square
-square_size = width // 8
+def split_image(img_path: str):
+    # Open the image
+    img = Image.open(img_path).convert("RGB")
 
-# Create a list to store the resized squares
-squares = []
+    # Get the width and height of the image
+    width, height = img.size
 
-# Loop through each row and column of the image
-for i in range(8):
-    for j in range(8):
-        # Crop the square from the image
-        x = j * square_size
-        y = i * square_size
-        square = img.crop((x, y, x + square_size, y + square_size))
-        
-        # Resize the square to (85, 85)
-        square = square.resize((85, 85))
-        
-        # Add the square to the list
-        squares.append(square)
+    # Calculate the size of each square
+    square_size = width // 8
+
+    # Create a list to store the resized squares
+    squares = []
+
+    # Loop through each row and column of the image
+    for i in range(8):
+        for j in range(8):
+            # Crop the square from the image
+            x = j * square_size
+            y = i * square_size
+            square = img.crop((x, y, x + square_size, y + square_size))
+            
+            # Resize the square to (85, 85)
+            square = square.resize((85, 85))
+            
+            # Add the square to the list
+            squares.append(square)
+    
+    return squares
+
+squares = split_image(img_path=image_path)
 
 def get_predicted_squares():
     predicted_squares = [[],[],[],[],[],[],[],[]]
 
     position_to_square = lambda position: position[0] * 8 + position[1]
 
-    for i in range(8):
-        for j in range(8):
+    for i in range(RANK_LENGTH):
+        for j in range(FILE_LENGTH):
             square_number = position_to_square((i, j))
             piece_colour = predict_image_colour(squares[square_number])
             piece_type = predict_image_piece(squares[square_number])
-            predicted_squares[i].append(piece_colour + " " + piece_type)
+            if piece_type != "blank":
+                predicted_squares[i].append(piece_colour + " " + piece_type)
+            else:
+                predicted_squares[i].append(piece_type)
 
     return predicted_squares
 
 
-
-
-
-
-
+print(get_predicted_squares())
+# squares[38].show()
+# squares[39].show()
+# print(predict_image_piece(squares[38]))
+# print(predict_image_piece(squares[39]))
 
 """
 'Chess Puzzle Loader'
