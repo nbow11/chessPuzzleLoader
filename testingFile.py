@@ -7,7 +7,7 @@ import pprint
 
 RANK_LENGTH, FILE_LENGTH = 8, 8
 
-image_path = "exampleImages/bookPuzzle.png"
+image_path = "exampleImages/liPuzzle.png"
 
 def split_image(img_path: str):
     # Open the image
