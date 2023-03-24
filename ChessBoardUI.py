@@ -21,30 +21,33 @@ class ChessBoardUI(tk.Frame):
                 
                 square = tk.Canvas(self, width=50, height=50, bg=color, highlightthickness=0)
                 square.grid(row=row, column=col)
-                # resize and place the piece images onto the squares
-                if row == 0 or row == 7:
-                    if col == 0 or col == 7:
-                        piece_image_file = 'blackRook.png' if row == 0 else 'whiteRook.png'
-                    elif col == 1 or col == 6:
-                        piece_image_file = 'blackKnight.png' if row == 0 else 'whiteKnight.png'
-                    elif col == 2 or col == 5:
-                        piece_image_file = 'blackBishop.png' if row == 0 else 'whiteBishop.png'
-                    elif col == 3:
-                        piece_image_file = 'blackQueen.png' if row == 0 else 'whiteQueen.png'
-                    else:
-                        piece_image_file = 'blackKing.png' if row == 0 else 'whiteKing.png'
-                elif row == 1 or row == 6:
-                    piece_image_file = 'blackPawn.png' if row == 1 else 'whitePawn.png'
-                else:
-                    continue  # no piece image to place on this square
-                
-                piece_image_path = os.path.join('pieceImagesGUI', piece_image_file)
-                piece_image = Image.open(piece_image_path)
-                piece_image = piece_image.resize((50, 50), Image.ANTIALIAS)
-                piece_image_tk = ImageTk.PhotoImage(piece_image)
-                
-                square.create_image(0, 0, image=piece_image_tk, anchor=tk.NW)
-                square.piece_image_tk = piece_image_tk  # save a reference to the image to prevent garbage collection
 
-    def _draw_pieces(self):
-        pass
+    def _create_piece_image(self, piece_name):
+        """
+        Create and return a resized PhotoImage object of the piece image with the given name.
+        """
+        color, piece = piece_name.split()
+        piece_image_file = f'{color.lower()}{piece.title()}.png'
+        piece_image_path = os.path.join('pieceImagesGUI', piece_image_file)
+        piece_image = Image.open(piece_image_path)
+        piece_image = piece_image.resize((50, 50), Image.ANTIALIAS)
+        piece_image_tk = ImageTk.PhotoImage(piece_image)
+        return piece_image_tk
+
+    def draw_pieces(self, pieces):
+        """
+        Draw the given pieces onto the board.
+        pieces: a list of 8 lists, each containing the names of the pieces to be placed in that row.
+        """
+        for row, piece_row in enumerate(pieces):
+            for col, piece_name in enumerate(piece_row):
+                if not piece_name:
+                    continue
+                
+                if piece_name != "blank":
+                    piece_image_tk = self._create_piece_image(piece_name)
+                    square = self.grid_slaves(row=row, column=col)[0]  # get the canvas square at the given row and col
+                    square.create_image(0, 0, image=piece_image_tk, anchor=tk.NW)
+                    square.piece_image_tk = piece_image_tk  # save a reference to the image to prevent garbage collection
+
+        self.pieces = pieces  # save a reference to the pieces so we can update them later if needed
