@@ -1,15 +1,19 @@
 from typing import *
 
 example_squares = [
-    ['blank', 'blank', 'blank', 'blank', 'black queen', 'blank', 'blank', 'blank'], 
-    ['white pawn', 'white king', 'blank', 'blank', 'blank', 'blank', 'blank', 'blank'], 
-    ['blank', 'blank', 'white rook', 'blank', 'blank', 'blank', 'blank', 'white pawn'], 
-    ['blank', 'blank', 'blank', 'blank', 'blank', 'blank', 'white pawn', 'blank'], 
-    ['blank', 'white rook', 'blank', 'blank', 'blank', 'blank', 'black pawn', 'black pawn'], 
-    ['blank', 'blank', 'blank', 'black knight', 'blank', 'blank', 'blank', 'blank'], 
-    ['black king', 'black pawn', 'blank', 'blank', 'blank', 'blank', 'blank', 'blank'], 
-    ['blank', 'blank', 'blank', 'blank', 'blank', 'blank', 'blank', 'blank']
+    ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
+    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'blank'], 
+    ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
+    ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
+    ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
+    ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
+    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
+    ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
 ]
+
+PIECE_WEIGHTS = {
+    "pawn": 1, "bishop": 3, "knight": 3, "rook": 5, "queen": 9, "king": 100
+}
 
 get_piece_coordinates = lambda piece: piece[1]
 
@@ -21,13 +25,15 @@ class ChessBoard:
             for j in range(8):
                 if self.board[i][j] != "blank":
                     if self.board[i][j].split()[0] == "white":
-                        self.white_pieces.append([example_squares[i][j], (i, j)])
+                        self.white_pieces.append([self.get_current_board()[i][j], (i, j)])
                     else:
-                        self.black_pieces.append([example_squares[i][j], (i, j)])
+                        self.black_pieces.append([self.get_current_board()[i][j], (i, j)])
 
     def get_current_board(self):
         return self.board
-    
+
+        return self.new_board
+
     def get_white_pieces(self):
         return self.white_pieces
     
@@ -83,7 +89,7 @@ class ChessBoard:
         for r in range(i-1, -1, -1):
             if self.get_current_board()[r][j] == 'blank':
                 possible_moves.append((position, (r, j)))
-            elif self.get_current_board()[r][j].startswith(opposite_colour):
+            elif self.get_current_board()[r][j].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (r, j)))
                 break
             else:
@@ -92,7 +98,7 @@ class ChessBoard:
         for r in range(i+1, 8):
             if self.get_current_board()[r][j] == 'blank':
                 possible_moves.append((position, (r, j)))
-            elif self.get_current_board()[r][j].startswith(opposite_colour):
+            elif self.get_current_board()[r][j].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (r, j)))
                 break
             else:
@@ -101,7 +107,7 @@ class ChessBoard:
         for c in range(j-1, -1, -1):
             if self.get_current_board()[i][c] == 'blank':
                 possible_moves.append((position, (i, c)))
-            elif self.get_current_board()[i][c].startswith(opposite_colour):
+            elif self.get_current_board()[i][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (i, c)))
                 break
             else:
@@ -110,7 +116,7 @@ class ChessBoard:
         for c in range(j+1, 8):
             if self.get_current_board()[i][c] == 'blank':
                 possible_moves.append((position, (i, c)))
-            elif self.get_current_board()[i][c].startswith(opposite_colour):
+            elif self.get_current_board()[i][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (i, c)))
                 break
             else:
@@ -128,7 +134,7 @@ class ChessBoard:
         while r >= 0 and c >= 0:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour):
+            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -139,7 +145,7 @@ class ChessBoard:
         while r >= 0 and c < 8:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour):
+            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -150,7 +156,7 @@ class ChessBoard:
         while r < 8 and c >= 0:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour):
+            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -161,7 +167,7 @@ class ChessBoard:
         while r < 8 and c < 8:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour):
+            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -182,7 +188,8 @@ class ChessBoard:
             r, c = move
             if r >= 0 and r < 8 and c >= 0 and c < 8:
                 if self.get_current_board()[r][c] == 'blank' or self.get_current_board()[r][c].startswith(opposite_colour):
-                    possible_moves.append((position, (r, c)))
+                    if self.get_current_board()[r][j] != f"{opposite_colour} king":
+                        possible_moves.append((position, (r, c)))
 
         return possible_moves
 
@@ -208,14 +215,15 @@ class ChessBoard:
         position = get_piece_coordinates(piece)
         i, j = position
         # Check all possible king moves from current position
-        for move in self.get_rook_moves(self.get_current_board(), piece, colour):
+        for move in self.get_rook_moves(piece, colour):
             possible_moves.append(move)
-        for move in self.get_bishop_moves(self.get_current_board(), piece, colour):
+        for move in self.get_bishop_moves(piece, colour):
             possible_moves.append(move)
 
         return possible_moves
 
     def get_capturable_pieces(self, moves):
+
         capturable_pieces = []
         for move in moves:
             initial, end = move
@@ -226,12 +234,41 @@ class ChessBoard:
 
         return capturable_pieces
 
+    def evaluate_board(self, colour: str) -> int:
+        value = 0
+        pieces = self.get_white_pieces() if colour == "white" else self.get_black_pieces()
+
+        for piece in pieces:
+            c, name = piece[0].split()
+            if name != "king":
+                value += PIECE_WEIGHTS[name]
+        
+        return value
+
+    def apply_move(self, piece_name: str, move: List[Tuple[int, int]]):
+        start_i, start_j = move[0]
+        end_i, end_j = move[1]
+
+        self.get_current_board()[start_i][start_j] = "blank"
+        self.get_current_board()[end_i][end_j] = piece_name
+
+        return self
+
+
 chessboard = ChessBoard(example_squares)
 
-for piece in chessboard.get_white_pieces():
-    if piece[0].startswith("white pawn"):
-        print(chessboard.get_white_pawn_moves(piece))
+# FIX EVALUATE BOARD -> NEEDS TO SEE THAT A MOVE MAXIMISES ITS SCORE
+# ATM, IT ONLY IS SEEING A CONSTANT SCORE
 
 
+print(example_squares[4][4])
+# for piece in chessboard.get_white_pieces():
+#     if piece[0].startswith("white rook"):
+#         print(chessboard.get_rook_moves(piece, "white"))
 
-# print(get_possible_moves(example_squares, white_pieces))
+# print(chessboard.evaluate_board("black"))
+
+# for piece in chessboard.get_white_pieces():
+#     if piece[0].split()[1] == "pawn":
+#         moves = chessboard.get_white_pawn_moves(piece)
+#         print(chessboard.get_capturable_pieces(moves))
