@@ -1,5 +1,8 @@
 from possibleMoves import ChessBoard
 from copy import deepcopy
+import math
+# from GUI_launcher import launch_GUI
+
 # from testingFile import get_predicted_squares
 
 example_squares = [
@@ -85,12 +88,12 @@ def minimax_alpha_beta(board: ChessBoard, depth: int, current_player: str):
 
     if current_player == "white":
         best_moves = []
-        max_eval = float('-inf')
+        max_eval = -math.inf
         for list_moves in legal_moves:
             for move in list_moves:
                 # Create a copy of the board
                 board_copy = deepcopy(board)
-                # Apply the move to the copy
+                # Apply the move to the copy``
                 board_copy.apply_move(move=move)
                 # Recursively call the function with the board copy
                 moves, eval = minimax_alpha_beta(board_copy, depth - 1, opposite_colour)
@@ -100,7 +103,7 @@ def minimax_alpha_beta(board: ChessBoard, depth: int, current_player: str):
         return best_moves, max_eval
     else:
         best_moves = []
-        min_eval = float('inf')
+        min_eval = math.inf
         for list_moves in legal_moves:
             for move in list_moves:
                 # Create a copy of the board
@@ -145,7 +148,9 @@ def minimax_alpha_beta(board: ChessBoard, depth: int, current_player: str):
     #     return best_score, best_move
 
 
-print(minimax_alpha_beta(chessboard, 3, "white"))
+# print(minimax_alpha_beta(chessboard, 2, "white"))
+# print(get_legal_moves(chessboard, "white"))
+
 # chessboard.apply_move([(4, 4), (5, 6)])
 # print(chessboard.evaluate_board("white"))
 # for list_moves in get_legal_moves(chessboard, "white"):

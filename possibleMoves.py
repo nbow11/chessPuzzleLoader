@@ -21,13 +21,17 @@ class ChessBoard:
     def __init__(self, board):
         self.board = board
         self.white_pieces, self.black_pieces = [], []
+        self.set_pieces()
+
+    def set_pieces(self):
+        self.white_pieces, self.black_pieces = [], []
         for i in range(8):
             for j in range(8):
-                if self.board[i][j] != "blank":
+                if self.get_current_board()[i][j] != "blank":
                     if self.board[i][j].split()[0] == "white":
-                        self.white_pieces.append([self.get_current_board()[i][j], (i, j)])
+                        self.get_white_pieces().append([self.get_current_board()[i][j], (i, j)])
                     else:
-                        self.black_pieces.append([self.get_current_board()[i][j], (i, j)])
+                        self.get_black_pieces().append([self.get_current_board()[i][j], (i, j)])
 
     def get_current_board(self):
         return self.board
@@ -40,7 +44,7 @@ class ChessBoard:
     def get_black_pieces(self):
         return self.black_pieces
 
-    def get_white_pawn_moves(self, piece):
+    def get_black_pawn_moves(self, piece):
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
@@ -52,14 +56,14 @@ class ChessBoard:
         elif self.get_current_board()[i+1][j] == 'blank':
             possible_moves.append((position, (i+1, j)))
         # Check if pawn can capture diagonally
-        if j > 0 and self.get_current_board()[i+1][j-1].startswith('black') and self.get_current_board()[i+1][j-1] != "black king":
+        if j > 0 and self.get_current_board()[i+1][j-1].startswith('white') and self.get_current_board()[i+1][j-1] != "white king":
             possible_moves.append((position, (i+1, j-1)))
-        if j < 7 and self.get_current_board()[i+1][j+1].startswith('black') and self.get_current_board()[i+1][j-1] != "black king":
+        if j < 7 and self.get_current_board()[i+1][j+1].startswith('white') and self.get_current_board()[i+1][j-1] != "white king":
             possible_moves.append((position, (i+1, j+1)))
 
         return possible_moves
 
-    def get_black_pawn_moves(self, piece):
+    def get_white_pawn_moves(self, piece):
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
@@ -71,9 +75,9 @@ class ChessBoard:
         elif self.get_current_board()[i-1][j] == 'blank':
             possible_moves.append((position, (i-1, j)))
         # Check if pawn can capture diagonally
-        if j > 0 and self.get_current_board()[i-1][j-1].startswith('white') and self.get_current_board()[i-1][j-1] != "white king":
+        if j > 0 and self.get_current_board()[i-1][j-1].startswith('black') and self.get_current_board()[i-1][j-1] != "black king":
             possible_moves.append((position, (i-1, j-1)))
-        if j < 7 and self.get_current_board()[i-1][j+1].startswith('white') and self.get_current_board()[i-1][j+1] != "white king":
+        if j < 7 and self.get_current_board()[i-1][j+1].startswith('black') and self.get_current_board()[i-1][j+1] != "black king":
             possible_moves.append((position, (i-1, j+1)))
 
         return possible_moves
@@ -262,10 +266,12 @@ class ChessBoard:
         if piece_name != "blank":
             self.get_current_board()[start_i][start_j] = "blank"
             self.get_current_board()[end_i][end_j] = piece_name
+            self.set_pieces()
 
 
 chessboard = ChessBoard(example_squares)
-
+# chessboard.apply_move([(4, 4), (2, 3)])
+# print(chessboard.evaluate_board("white"))
 # FIX EVALUATE BOARD -> NEEDS TO SEE THAT A MOVE MAXIMISES ITS SCORE
 # ATM, IT ONLY IS SEEING A CONSTANT SCORE
 
