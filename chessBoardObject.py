@@ -226,6 +226,24 @@ class ChessBoard:
 
         return possible_moves
 
+    def get_piece_moves(self, piece, colour: str):
+        match piece[0].split()[1]:
+            case "pawn":
+                if colour == "white":
+                    return self.get_white_pawn_moves(piece)
+                else:
+                    return self.get_black_pawn_moves(piece)
+            case "bishop":
+                return self.get_bishop_moves(piece, colour)
+            case "knight":
+                return self.get_knight_moves(piece, colour)
+            case "rook":
+                return self.get_rook_moves(piece, colour)
+            case "queen":
+                return self.get_queen_moves(piece, colour)
+            case "king":
+                return self.get_king_moves(piece, colour)
+
     def get_capturable_pieces(self, moves):
 
         capturable_pieces = []
@@ -238,7 +256,7 @@ class ChessBoard:
 
         return capturable_pieces
 
-    def evaluate_board(self, colour: str) -> int:
+    def evaluate_board_material(self, colour: str) -> int:
         TOTAL_PIECES_VALUE = 39
         pieces_present = {}
         pieces_present_value = 0
@@ -254,7 +272,7 @@ class ChessBoard:
 
         for piece, value in pieces_present.items():
             pieces_present_value += PIECE_WEIGHTS[piece] * value
-
+        
         return TOTAL_PIECES_VALUE - pieces_present_value
 
     def apply_move(self, move: List[Tuple[int, int]]):
@@ -270,8 +288,13 @@ class ChessBoard:
 
 
 chessboard = ChessBoard(example_squares)
+# chessboard.apply_move([(7, 3), (1, 3)]) 
+# chessboard.apply_move([(0, 6), (6, 6)]) 
+# print(chessboard.get_capturable_pieces())
 # chessboard.apply_move([(4, 4), (2, 3)])
-# print(chessboard.evaluate_board("white"))
+# chessboard.apply_move([(7, 3), (1, 3)])
+# print(chessboard.evaluate_board_material("white"))
+
 # FIX EVALUATE BOARD -> NEEDS TO SEE THAT A MOVE MAXIMISES ITS SCORE
 # ATM, IT ONLY IS SEEING A CONSTANT SCORE
 
