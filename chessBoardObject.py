@@ -12,7 +12,7 @@ example_squares = [
 ]
 
 PIECE_WEIGHTS = {
-    "pawn": 1, "bishop": 3, "knight": 3, "rook": 5, "queen": 9, "king": 100
+    "pawn": 10, "bishop": 30, "knight": 30, "rook": 50, "queen": 90, "king": 100
 }
 
 get_piece_coordinates = lambda piece: piece[1]
@@ -255,6 +255,54 @@ class ChessBoard:
                 capturable_pieces.append((self.get_current_board()[i][j], (i, j)))
 
         return capturable_pieces
+    
+    def assess_double_pawns(self, colour: str) -> int:
+        DOUBLE_PENALTY = -2
+        double_score = 0
+        double_count = {}
+        
+        for row in range(8):
+            for col in range(8):
+                piece = self.get_current_board()[row][col]
+                if piece != "blank":
+                    piece_colour, piece_name = piece.split()
+                    if piece is not None and piece_colour == colour and piece_name == "pawn":
+                        if col in double_count:
+                            double_count[col] += 1
+                        else:
+                            double_count[col] = 0
+        
+        for value in double_count.values():
+            if value >= 1:
+                double_score += value * DOUBLE_PENALTY
+        
+        return double_score
+
+    def evaluate_pawn_structure(self, colour: str):
+        pawn_structure_value = 0
+        opposite_colour = "white" if colour == "black" else "white"
+
+        for row in range(8):
+            for col in range(8):
+                piece = self.get_current_board()[row][col]
+                if piece != "blank":
+                    piece_colour, piece_name = piece.split()
+                    if piece is not None and piece_colour == colour and piece_name == "pawn":
+                        if (colour == "black" and row == 6) or (colour == "white" and row == 1):
+                            pawn_structure_value += 5
+                        elif row == 2 or row == 5:
+                            pawn_structure_value += 3
+                        elif row == 3 or row == 4:
+                            if opposite_colour == "white":
+                                if len(self.get_white_pieces()) < 7:
+                                    pawn_structure_value += 3
+                            else:
+                                if len(self.get_black_pieces()) < 7:
+                                    pawn_structure_value += 3
+                        else:
+                            pawn_structure_value += 1
+
+        return pawn_structure_value + self.assess_double_pawns(colour)
 
     def evaluate_board_material(self, colour: str) -> int:
         TOTAL_PIECES_VALUE = 39
@@ -275,6 +323,11 @@ class ChessBoard:
         
         return TOTAL_PIECES_VALUE - pieces_present_value
 
+    def evaluate_board(self, colour) -> int:
+        total_score = self.evaluate_board_material(colour) + self.evaluate_pawn_structure(colour)
+
+        return total_score
+
     def apply_move(self, move: List[Tuple[int, int]]):
         start_i, start_j = move[0]
         end_i, end_j = move[1]
@@ -283,11 +336,16 @@ class ChessBoard:
 
         if piece_name != "blank":
             self.get_current_board()[start_i][start_j] = "blank"
-            self.get_current_board()[end_i][end_j] = piece_name
+            colour = piece_name.split()[0]
+            if end_i == 0 and piece_name == "white pawn" or end_i == 7 and piece_name == "black pawn":
+                self.get_current_board()[end_i][end_j] = f"{colour} queen"
+            else:
+                self.get_current_board()[end_i][end_j] = piece_name
             self.set_pieces()
 
 
 chessboard = ChessBoard(example_squares)
+
 # chessboard.apply_move([(7, 3), (1, 3)]) 
 # chessboard.apply_move([(0, 6), (6, 6)]) 
 # print(chessboard.get_capturable_pieces())

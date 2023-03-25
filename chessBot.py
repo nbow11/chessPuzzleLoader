@@ -65,7 +65,7 @@ def minimax_alpha_beta(board: ChessBoard, depth: int, maximising_player: bool,
                        current_player: str, alpha=-math.inf, beta=math.inf):
     
     if depth == 0:
-        return None, board.evaluate_board_material(current_player)
+        return None, board.evaluate_board(current_player)
 
     legal_moves = get_legal_moves(board, current_player)
 

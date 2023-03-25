@@ -13,7 +13,7 @@ root = tk.Tk()
 
 example_squares = [
     ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
-    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'blank'], 
+    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'white pawn'], 
     ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
     ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
     ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
@@ -31,7 +31,6 @@ board_panel = ChessBoardUI(root)
 def launch_GUI(pieces):
     # Create the top panel for the chess board
     
-
     board_panel.draw_pieces(pieces)
     board_panel.pack(side=tk.TOP)
 
