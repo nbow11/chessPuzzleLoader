@@ -235,24 +235,33 @@ class ChessBoard:
         return capturable_pieces
 
     def evaluate_board(self, colour: str) -> int:
-        value = 0
-        pieces = self.get_white_pieces() if colour == "white" else self.get_black_pieces()
-
-        for piece in pieces:
+        TOTAL_PIECES_VALUE = 39
+        pieces_present = {}
+        pieces_present_value = 0
+        opponent_pieces = self.get_white_pieces() if colour == "black" else self.get_black_pieces()
+        
+        for piece in opponent_pieces:
             c, name = piece[0].split()
             if name != "king":
-                value += PIECE_WEIGHTS[name]
-        
-        return value
+                if name not in pieces_present:
+                    pieces_present[name] = 1
+                else:
+                    pieces_present[name] = pieces_present[name] + 1
 
-    def apply_move(self, piece_name: str, move: List[Tuple[int, int]]):
+        for piece, value in pieces_present.items():
+            pieces_present_value += PIECE_WEIGHTS[piece] * value
+
+        return TOTAL_PIECES_VALUE - pieces_present_value
+
+    def apply_move(self, move: List[Tuple[int, int]]):
         start_i, start_j = move[0]
         end_i, end_j = move[1]
 
-        self.get_current_board()[start_i][start_j] = "blank"
-        self.get_current_board()[end_i][end_j] = piece_name
+        piece_name = self.get_current_board()[start_i][start_j]
 
-        return self
+        if piece_name != "blank":
+            self.get_current_board()[start_i][start_j] = "blank"
+            self.get_current_board()[end_i][end_j] = piece_name
 
 
 chessboard = ChessBoard(example_squares)
@@ -261,12 +270,12 @@ chessboard = ChessBoard(example_squares)
 # ATM, IT ONLY IS SEEING A CONSTANT SCORE
 
 
-print(example_squares[4][4])
+# print(example_squares[5][6])
 # for piece in chessboard.get_white_pieces():
 #     if piece[0].startswith("white rook"):
 #         print(chessboard.get_rook_moves(piece, "white"))
 
-# print(chessboard.evaluate_board("black"))
+# print(chessboard.evaluate_board("white"))
 
 # for piece in chessboard.get_white_pieces():
 #     if piece[0].split()[1] == "pawn":

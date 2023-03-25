@@ -1,4 +1,5 @@
 from possibleMoves import ChessBoard
+from copy import deepcopy
 # from testingFile import get_predicted_squares
 
 example_squares = [
@@ -75,45 +76,87 @@ def get_legal_moves(board: ChessBoard, current_player: str):
 
     return legal_moves
 
-def minimax_alpha_beta(board: ChessBoard, depth: int, current_player: str, alpha, beta):
-    if depth == 0: return board.evaluate_board(current_player)
-    opposite_colour = "white" if current_player == "black" else "black"
+def minimax_alpha_beta(board: ChessBoard, depth: int, current_player: str):
+    if depth == 0:
+        return [], board.evaluate_board(current_player)
 
+    opposite_colour = "white" if current_player == "black" else "black"
     legal_moves = get_legal_moves(board, current_player)
 
-    best_score = float('-inf') if current_player == "white" else float('inf')
-    best_move = None
-    for list_moves in legal_moves:
-        for move in list_moves:
-            start, end = move
-            piece_name = board.get_current_board()[start[0]][start[1]]
-            new_board = board.apply_move(piece_name, move=move)
-            score = -minimax_alpha_beta(new_board, depth - 1, opposite_colour, -beta, -alpha)
-            if current_player == "white":
-                if score > best_score:
-                    best_score = score
-                    best_move = move
-                alpha = max(alpha, score)
-                if beta <= alpha:
-                    break
-            else:
-                if score < best_score:
-                    best_score = score
-                    best_move = move
-                beta = min(beta, score)
-                if beta <= alpha:
-                    break
-    print(best_move)
+    if current_player == "white":
+        best_moves = []
+        max_eval = float('-inf')
+        for list_moves in legal_moves:
+            for move in list_moves:
+                # Create a copy of the board
+                board_copy = deepcopy(board)
+                # Apply the move to the copy
+                board_copy.apply_move(move=move)
+                # Recursively call the function with the board copy
+                moves, eval = minimax_alpha_beta(board_copy, depth - 1, opposite_colour)
+                if eval > max_eval:
+                    max_eval = eval
+                    best_moves = [move] + moves
+        return best_moves, max_eval
+    else:
+        best_moves = []
+        min_eval = float('inf')
+        for list_moves in legal_moves:
+            for move in list_moves:
+                # Create a copy of the board
+                board_copy = deepcopy(board)
+                # Apply the move to the copy
+                board_copy.apply_move(move=move)
+                # Recursively call the function with the board copy
+                moves, eval = minimax_alpha_beta(board_copy, depth - 1, opposite_colour)
+                if eval < min_eval:
+                    min_eval = eval
+                    best_moves = [move] + moves
+        return best_moves, min_eval
 
-    return best_score
+    # best_score = float('-inf') if current_player == "white" else float('inf')
+    # best_move = None
+    # for list_moves in legal_moves:
+    #     for move in list_moves:
+    #         start, end = move
+    #         piece_name = board.get_current_board()[start[0]][start[1]]
+    #         new_board = board.apply_move(piece_name, move=move)
+    #         score = -minimax_alpha_beta(new_board, depth - 1, opposite_colour, -beta, -alpha)
+    #         if current_player == "white":
+    #             if score > best_score:
+    #                 best_score = score
+    #                 best_move = move
+    #             alpha = max(alpha, score)
+    #             if beta <= alpha:
+    #                 break
+    #         else:
+    #             if score < best_score:
+    #                 best_score = score
+    #                 best_move = move
+    #             beta = min(beta, score)
+    #             if beta <= alpha:
+    #                 break
+
+    # return best_score
 
     # if best_move is None:
     #     return best_score
     # else:
     #     return best_score, best_move
 
-# chessboard.apply_move("white knight", [(4, 4), (5, 6)])
-# print(minimax_alpha_beta(chessboard, 2, "white", float('-inf'), float('inf')))
-print(get_legal_moves(chessboard, "white"))
+
+print(minimax_alpha_beta(chessboard, 3, "white"))
+# chessboard.apply_move([(4, 4), (5, 6)])
+# print(chessboard.evaluate_board("white"))
+# for list_moves in get_legal_moves(chessboard, "white"):
+#     for move in list_moves:
+#         print(move)
+# print(minimax_alpha_beta(chessboard, 3, "white"))
+
+# print(get_legal_moves(chessboard, "white"))
+# legal_moves = get_legal_moves(chessboard, "white")
+# for list_moves in legal_moves:
+#         for move in list_moves:
+#             print(move)
 
 # NEED TO FIX TO DISALLOW KING CAPTURE
