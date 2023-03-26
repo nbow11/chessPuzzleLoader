@@ -3,12 +3,12 @@ from copy import deepcopy
 
 example_squares = [
     ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
-    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'blank'], 
+    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'black queen', 'blank'], 
     ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
     ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
     ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
     ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
-    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'black queen', 'white pawn'], 
+    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
     ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
 ]
 
@@ -385,6 +385,70 @@ class ChessBoard:
                 double_score += value * DOUBLE_PENALTY
         
         return double_score
+    
+    def does_player_have_checkmate(self, requested_colour: str) -> int:
+        opponent_pieces = self.get_white_pieces() if requested_colour == "black" else self.get_black_pieces()
+        opponent_colour = "white" if requested_colour == "black" else "white"
+
+        legal_moves = []
+
+        for piece in opponent_pieces:
+            legal_moves.append(self.get_piece_moves(piece, opponent_colour, opponent_colour))
+
+        checkmate = True
+
+        for moves in legal_moves:
+            if moves != []:
+                checkmate = False
+        
+        return 9999999 if checkmate else 0
+
+    def does_opponent_have_checkmate(self, requested_colour: str) -> int:
+        player_pieces = self.get_white_pieces() if requested_colour == "white" else self.get_black_pieces()
+
+        legal_moves = []
+
+        for piece in player_pieces:
+            legal_moves.append(self.get_piece_moves(piece, requested_colour, requested_colour))
+
+        checkmate = True
+
+        for moves in legal_moves:
+            if moves != []:
+                checkmate = False
+        
+        return -99999 if checkmate else 0
+
+    def is_checkmate(self):
+        return self.is_white_mated() or self.is_black_mated()
+    
+    def is_white_mated(self):
+        checkmate = True
+
+        white_pieces = self.get_white_pieces()
+        legal_moves = []
+        for piece in white_pieces:
+            legal_moves.append(self.get_piece_moves(piece, "white", "white"))
+
+        for moves in legal_moves:
+            if moves != []:
+                checkmate = False
+        
+        return checkmate
+
+    def is_black_mated(self):
+        checkmate = True
+
+        black_pieces = self.get_black_pieces()
+        legal_moves = []
+        for piece in black_pieces:
+            legal_moves.append(self.get_piece_moves(piece, "black", "black"))
+
+        for moves in legal_moves:
+            if moves != []:
+                checkmate = False
+        
+        return checkmate
 
     def evaluate_pawn_structure(self, colour: str):
         pawn_structure_value = 0
@@ -413,7 +477,7 @@ class ChessBoard:
         return pawn_structure_value + self.assess_double_pawns(colour)
 
     def evaluate_board_material(self, colour: str) -> int:
-        TOTAL_PIECES_VALUE = 39
+        TOTAL_PIECES_VALUE = 390
         pieces_present = {}
         pieces_present_value = 0
         opponent_pieces = self.get_white_pieces() if colour == "black" else self.get_black_pieces()
@@ -432,7 +496,13 @@ class ChessBoard:
         return TOTAL_PIECES_VALUE - pieces_present_value
 
     def evaluate_board(self, colour) -> int:
-        total_score = self.evaluate_board_material(colour) + self.evaluate_pawn_structure(colour)
+        # scores
+        material = self.evaluate_board_material(colour)
+        pawn_structure = self.evaluate_pawn_structure(colour)
+        opponent_has_checkmate = self.does_opponent_have_checkmate(colour)
+        player_has_checkmate = self.does_player_have_checkmate(colour)
+
+        total_score = material + pawn_structure + opponent_has_checkmate + player_has_checkmate
 
         return total_score
 
@@ -458,9 +528,9 @@ class ChessBoard:
 
 
 chessboard = ChessBoard(example_squares)
+# print(chessboard.is_checkmate())
 # for piece in chessboard.get_black_pieces():
-#     if piece[0] == "black king":
-#         print(chessboard.get_piece_moves(piece, "black", "black"))
+#     print(chessboard.get_piece_moves(piece, "black", "black"))
 # for piece in chessboard.get_white_pieces():
 #     if piece[0] == "white knight":
 #         print(chessboard.get_piece_moves(piece, "white", current_player="white"))

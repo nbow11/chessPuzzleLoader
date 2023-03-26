@@ -1,4 +1,4 @@
-from chessBoardObject import ChessBoard
+from chessBoardEntity import ChessBoard
 from copy import deepcopy
 import math
 # from GUI_launcher import launch_GUI
@@ -7,12 +7,12 @@ import math
 
 example_squares = [
     ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
-    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'blank'], 
+    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'black queen', 'blank'], 
     ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
     ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
     ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
     ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
-    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'black queen', 'white pawn'], 
+    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
     ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
 ]
 
@@ -59,10 +59,6 @@ def get_legal_moves(board: ChessBoard, requested_colour: str, current_player: st
     for piece in pieces:
         legal_moves.append(board.get_piece_moves(piece, requested_colour, current_player))
 
-    if is_check_mate(legal_moves):
-        print("CHECKMATE")
-        return
-
     return legal_moves
 
 def is_check_mate(legal_moves):
@@ -77,18 +73,14 @@ def is_check_mate(legal_moves):
 def minimax_alpha_beta(board: ChessBoard, depth: int, maximising_player: bool, 
                        requested_colour: str, alpha=-math.inf, beta=math.inf):
     
-    if depth == 0:
+    if depth == 0 or board.is_checkmate():
         return None, board.evaluate_board(requested_colour)
     
-    current_player = None
-    if maximising_player == True:
-        current_player = requested_colour
-    else:
-        current_player = "white" if requested_colour == "black" else "white"
-
-    legal_moves = get_legal_moves(board, requested_colour, current_player)
+    opposing_colour = "white" if requested_colour == "black" else "white"
 
     if maximising_player:
+        legal_moves = get_legal_moves(board, requested_colour, requested_colour)
+        if legal_moves == None: return
         best_move = None
         max_eval = -math.inf
         for list_moves in legal_moves:
@@ -107,6 +99,8 @@ def minimax_alpha_beta(board: ChessBoard, depth: int, maximising_player: bool,
                     break
         return best_move, max_eval
     else:
+        legal_moves = get_legal_moves(board, opposing_colour, opposing_colour)
+        if legal_moves == None: return
         best_move = None
         min_eval = math.inf
         for list_moves in legal_moves:
@@ -124,51 +118,25 @@ def minimax_alpha_beta(board: ChessBoard, depth: int, maximising_player: bool,
                 if beta <= alpha:
                     break
         return best_move, min_eval
-
-    # best_score = float('-inf') if current_player == "white" else float('inf')
-    # best_move = None
-    # for list_moves in legal_moves:
-    #     for move in list_moves:
-    #         start, end = move
-    #         piece_name = board.get_current_board()[start[0]][start[1]]
-    #         new_board = board.apply_move(piece_name, move=move)
-    #         score = -minimax_alpha_beta(new_board, depth - 1, opposite_colour, -beta, -alpha)
-    #         if current_player == "white":
-    #             if score > best_score:
-    #                 best_score = score
-    #                 best_move = move
-    #             alpha = max(alpha, score)
-    #             if beta <= alpha:
-    #                 break
-    #         else:
-    #             if score < best_score:
-    #                 best_score = score
-    #                 best_move = move
-    #             beta = min(beta, score)
-    #             if beta <= alpha:
-    #                 break
-
-    # return best_score
-
-    # if best_move is None:
-    #     return best_score
-    # else:
-    #     return best_score, best_move
+    
 
 # for piece in chessboard.get_white_pieces():
 #     if piece[0] == "white king":
 #         print(chessboard.is_king_in_check(piece[1], piece))
-print(get_legal_moves(chessboard, "white", "white"))
-# chessboard.apply_move([(0, 4), (1, 4)])
-# print(chessboard.evaluate_board_material("black"))
+# print(get_legal_moves(chessboard, "white", "white"))
+# chessboard.apply_move([(7, 3), (1, 3)])
+# print(chessboard.evaluate_player_checkmate("white"))
 # for list_moves in get_legal_moves(chessboard, "black"):
 #     print(chessboard.get_capturable_pieces(list_moves))
 # chessboard.apply_move([(0, 4), (1, 3)])
-# print(chessboard.evaluate_board_material("black"))
+# print(chessboard.evaluate_board("black"))
 # print(get_legal_moves(chessboard, "black"))
-# print(minimax_alpha_beta(chessboard, 2, "black"))
+print(minimax_alpha_beta(chessboard, 2, True, "white"))
 # chessboard.apply_move([(4, 4), (5, 6)])
-# print(minimax_alpha_beta(chessboard, 2, "white"))
+# chessboard.apply_move([(1, 6), (6, 6)])
+# print(minimax_alpha_beta(chessboard, 2, True, "white"))
+# print(chessboard.does_player_have_checkmate("black"))
+# print(chessboard.evaluate_opponent_checkmate("white"))
 # chessboard.apply_move([(7, 3), (1, 3)]) 
 # chessboard.apply_move([(0, 6), (6, 6)]) 
 # chessboard.apply_move([(4, 4), (3, 2)]) 

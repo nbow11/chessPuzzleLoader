@@ -1,10 +1,10 @@
 import tkinter as tk
 from ChessBoardUI import ChessBoardUI
-from chessBoardObject import ChessBoard
+from chessBoardEntity import ChessBoard
 from tkinter import filedialog
 from PIL import ImageTk, Image
 # from testingFile import split_image, get_predicted_squares
-from chessBot import minimax_alpha_beta, get_legal_moves, is_check_mate
+from chessAI_minimax import minimax_alpha_beta, get_legal_moves, is_check_mate
 import random
 import itertools
 # from testingFile import get_predicted_squares
@@ -16,7 +16,7 @@ root = tk.Tk()
 
 example_squares = [
     ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
-    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'blank'], 
+    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'black queen', 'blank'], 
     ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
     ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
     ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
@@ -67,6 +67,8 @@ def launch_GUI(pieces):
     global chessboard
     chessboard = ChessBoard(pieces)
     board_panel = ChessBoardUI(root)
+
+    chessboard.apply_move([(6, 4), (4, 0)])
 
     board_panel.draw_pieces(pieces)
     board_panel.pack(side=tk.TOP)
