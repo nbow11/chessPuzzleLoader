@@ -27,7 +27,7 @@ open_button.pack()
 image_label = tk.Label(root)
 image_label.pack()
 
-save_button = tk.Button(root, text="Save image", command=save_image, state=tk.DISABLED)
+save_button = tk.Button(root, text="Confirm", command=save_image, state=tk.DISABLED)
 save_button.pack()
 
 root.mainloop()

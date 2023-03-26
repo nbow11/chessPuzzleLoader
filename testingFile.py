@@ -9,9 +9,12 @@ RANK_LENGTH, FILE_LENGTH = 8, 8
 
 image_path = "exampleImages/liPuzzle3.png"
 
-def split_image(img_path: str):
+def split_image(board_image: Image = None, img_path: str = None):
     # Open the image
-    img = Image.open(img_path).convert("RGB")
+    if img_path is not None:
+        img = Image.open(img_path).convert("RGB")
+    else:
+        img = board_image
 
     # Get the width and height of the image
     width, height = img.size
@@ -38,9 +41,8 @@ def split_image(img_path: str):
     
     return squares
 
-squares = split_image(img_path=image_path)
-
-def get_predicted_squares():
+def get_predicted_squares(squares):
+    squares = split_image(img_path=image_path)
     predicted_squares = [[],[],[],[],[],[],[],[]]
 
     position_to_square = lambda position: position[0] * 8 + position[1]
@@ -58,7 +60,7 @@ def get_predicted_squares():
     return predicted_squares
 
 
-print(get_predicted_squares())
+# print(get_predicted_squares())
 # squares[38].show()
 # squares[39].show()
 # print(predict_image_piece(squares[38]))

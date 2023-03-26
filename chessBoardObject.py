@@ -344,7 +344,7 @@ class ChessBoard:
             self.set_pieces()
 
 
-chessboard = ChessBoard(example_squares)
+# chessboard = ChessBoard(example_squares)
 
 # chessboard.apply_move([(7, 3), (1, 3)]) 
 # chessboard.apply_move([(0, 6), (6, 6)]) 

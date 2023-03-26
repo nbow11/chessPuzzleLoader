@@ -1,6 +1,9 @@
 import tkinter as tk
 from ChessBoardUI import ChessBoardUI
 from chessBoardObject import ChessBoard
+from tkinter import filedialog
+from PIL import ImageTk, Image
+from testingFile import split_image, get_predicted_squares
 from chessBot import minimax_alpha_beta, get_legal_moves
 import random
 import itertools
@@ -11,26 +14,61 @@ root = tk.Tk()
 
 # puzzle_squares = get_predicted_squares()
 
-example_squares = [
-    ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
-    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'white pawn'], 
-    ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
-    ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
-    ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
-    ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
-    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
-    ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
-]
+# example_squares = [
+#     ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
+#     ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'white pawn'], 
+#     ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
+#     ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
+#     ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
+#     ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
+#     ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
+#     ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
+# ]
 
 CURRENT_PLAYER = True
 
-chessboard = ChessBoard(example_squares)
+chessboard = None
 
-board_panel = ChessBoardUI(root)
+board_image = None
+
+def open_image():
+    global board_image
+    file_path = filedialog.askopenfilename()
+    if file_path:
+        img = Image.open(file_path).convert("RGB")
+        img = img.resize((250, 250), Image.ANTIALIAS)
+        board_image = img
+        photo = ImageTk.PhotoImage(img)
+        image_label.config(image=photo)
+        image_label.image = photo  # Keep a reference to the image to prevent garbage collection
+        save_button.config(state=tk.NORMAL)
+
+predicted_squares = None
+
+def save_image():
+    squares = split_image(board_image=board_image)
+    predicted_squares = get_predicted_squares(squares)
+    for widget in root.winfo_children():
+        widget.destroy()
+    # launch_GUI(predicted_squares)
+
+open_button = tk.Button(root, text="Open image", command=open_image)
+open_button.pack()
+
+image_label = tk.Label(root)
+image_label.pack()
+
+save_button = tk.Button(root, text="Confirm", command=save_image, state=tk.DISABLED)
+save_button.pack()
 
 def launch_GUI(pieces):
     # Create the top panel for the chess board
+    global chessboard
+    chessboard = ChessBoard(pieces)
+    board_panel = ChessBoardUI(root)
     
+    print(chessboard.get_current_board())
+
     board_panel.draw_pieces(pieces)
     board_panel.pack(side=tk.TOP)
 
@@ -40,9 +78,6 @@ def launch_GUI(pieces):
 
     button.pack()
     moves_panel.pack(side=tk.BOTTOM)
-
-    # Start the GUI event loop
-    root.mainloop()
 
 def redraw():
     global CURRENT_PLAYER
@@ -69,6 +104,7 @@ def button_click():
     redraw()
     root.after(2000, button_click)
 
+root.mainloop()
 # chessboard.apply_move([(0, 6), (3, 6)])
 
 # chessboard.apply_move([(0, 4), (1, 3)])
@@ -88,7 +124,7 @@ def button_click():
 #         print(chessboard.get_piece_moves(piece, "black"))
 # print(get_legal_moves(chessboard, "black"))
 # print(chessboard.get_current_board()[1][3])
-launch_GUI(chessboard.get_current_board())
+# launch_GUI(chessboard.get_current_board())
 
 # FIX ROOK NOT BEING TAKEN BY ANY PIECES IN THE LEGAL MOVES GENERATOR
 
