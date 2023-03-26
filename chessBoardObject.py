@@ -1,4 +1,5 @@
 from typing import *
+from copy import deepcopy
 
 example_squares = [
     ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
@@ -7,7 +8,7 @@ example_squares = [
     ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
     ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
     ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
-    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
+    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'black queen', 'white pawn'], 
     ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
 ]
 
@@ -48,6 +49,10 @@ class ChessBoard:
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
+
+        king = self.get_king("black")
+        king_position = king[1]
+
         # Check if pawn can move one or two steps forward
         if i == 1 and self.get_current_board()[i+1][j] == 'blank' and self.get_current_board()[i+2][j] == 'blank':
             if self.get_current_board()[i+1][j] == 'blank':  # check if square in front of pawn is empty
@@ -56,17 +61,38 @@ class ChessBoard:
         elif self.get_current_board()[i+1][j] == 'blank':
             possible_moves.append((position, (i+1, j)))
         # Check if pawn can capture diagonally
-        if j > 0 and self.get_current_board()[i+1][j-1].startswith('white') and self.get_current_board()[i+1][j-1] != "white king":
+        if j > 0 and self.get_current_board()[i+1][j-1].startswith('white'):
             possible_moves.append((position, (i+1, j-1)))
-        if j < 7 and self.get_current_board()[i+1][j+1].startswith('white') and self.get_current_board()[i+1][j-1] != "white king":
+        if j < 7 and self.get_current_board()[i+1][j+1].startswith('white'):
             possible_moves.append((position, (i+1, j+1)))
-
+        
+        # return possible_moves
+        # if not self.is_king_in_check(king_position, king):
+        #     return possible_moves
+        
         return possible_moves
+        # # return possible_moves while king in check
+        # return self.is_move_legal_while_check(king_position, possible_moves)
+
+    def is_move_legal_while_check(self, king_position, possible_moves):
+        legal_moves = []
+        
+        for move in possible_moves:
+            board_copy = deepcopy(self)
+            board_copy.apply_move(move)
+            if not board_copy.is_king_in_check(king_position, piece):
+                legal_moves.append(move)
+
+        return legal_moves
 
     def get_white_pawn_moves(self, piece):
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
+
+        king = self.get_king("white")
+        king_position = king[1]
+
         # Check if pawn can move one or two steps forward
         if i == 6 and self.get_current_board()[i-1][j] == 'blank' and self.get_current_board()[i-2][j] == 'blank':
             if self.get_current_board()[i-1][j] == 'blank':  # check if square in front of pawn is empty
@@ -75,16 +101,27 @@ class ChessBoard:
         elif self.get_current_board()[i-1][j] == 'blank':
             possible_moves.append((position, (i-1, j)))
         # Check if pawn can capture diagonally
-        if j > 0 and self.get_current_board()[i-1][j-1].startswith('black') and self.get_current_board()[i-1][j-1] != "black king":
+        if j > 0 and self.get_current_board()[i-1][j-1].startswith('black'):
             possible_moves.append((position, (i-1, j-1)))
-        if j < 7 and self.get_current_board()[i-1][j+1].startswith('black') and self.get_current_board()[i-1][j+1] != "black king":
+        if j < 7 and self.get_current_board()[i-1][j+1].startswith('black'):
             possible_moves.append((position, (i-1, j+1)))
 
-        return possible_moves
+        if not self.is_king_in_check(king_position, king):
+            return possible_moves
+        
+        # return possible_moves while king in check
+        return self.is_move_legal_while_check(king_position, possible_moves)
 
     def get_rook_moves(self, piece, colour):
 
         opposite_colour = "black" if colour == "white" else "white"
+
+        # Note: for some reason, get_pieces is failing because it is being called for both colours
+        # need to fix this -> recursion
+        # MAYBE: Implement whose turn it is and use this as a conditional before checking if king in check
+
+        king = self.get_king(colour)
+        king_position = king[1]
 
         possible_moves = []
         position = get_piece_coordinates(piece)
@@ -93,7 +130,7 @@ class ChessBoard:
         for r in range(i-1, -1, -1):
             if self.get_current_board()[r][j] == 'blank':
                 possible_moves.append((position, (r, j)))
-            elif self.get_current_board()[r][j].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[r][j].startswith(opposite_colour):
                 possible_moves.append((position, (r, j)))
                 break
             else:
@@ -102,7 +139,7 @@ class ChessBoard:
         for r in range(i+1, 8):
             if self.get_current_board()[r][j] == 'blank':
                 possible_moves.append((position, (r, j)))
-            elif self.get_current_board()[r][j].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[r][j].startswith(opposite_colour):
                 possible_moves.append((position, (r, j)))
                 break
             else:
@@ -111,7 +148,7 @@ class ChessBoard:
         for c in range(j-1, -1, -1):
             if self.get_current_board()[i][c] == 'blank':
                 possible_moves.append((position, (i, c)))
-            elif self.get_current_board()[i][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[i][c].startswith(opposite_colour):
                 possible_moves.append((position, (i, c)))
                 break
             else:
@@ -120,7 +157,7 @@ class ChessBoard:
         for c in range(j+1, 8):
             if self.get_current_board()[i][c] == 'blank':
                 possible_moves.append((position, (i, c)))
-            elif self.get_current_board()[i][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[i][c].startswith(opposite_colour):
                 possible_moves.append((position, (i, c)))
                 break
             else:
@@ -138,7 +175,7 @@ class ChessBoard:
         while r >= 0 and c >= 0:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[r][c].startswith(opposite_colour):
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -149,7 +186,7 @@ class ChessBoard:
         while r >= 0 and c < 8:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[r][c].startswith(opposite_colour):
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -160,7 +197,7 @@ class ChessBoard:
         while r < 8 and c >= 0:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[r][c].startswith(opposite_colour):
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -171,7 +208,7 @@ class ChessBoard:
         while r < 8 and c < 8:
             if self.get_current_board()[r][c] == 'blank':
                 possible_moves.append((position, (r, c)))
-            elif self.get_current_board()[r][c].startswith(opposite_colour) and self.get_current_board()[r][j] != f"{opposite_colour} king":
+            elif self.get_current_board()[r][c].startswith(opposite_colour):
                 possible_moves.append((position, (r, c)))
                 break
             else:
@@ -192,8 +229,7 @@ class ChessBoard:
             r, c = move
             if r >= 0 and r < 8 and c >= 0 and c < 8:
                 if self.get_current_board()[r][c] == 'blank' or self.get_current_board()[r][c].startswith(opposite_colour):
-                    if self.get_current_board()[r][j] != f"{opposite_colour} king":
-                        possible_moves.append((position, (r, c)))
+                    possible_moves.append((position, (r, c)))
 
         return possible_moves
 
@@ -205,14 +241,52 @@ class ChessBoard:
         # Check all possible king moves from current position
         king_moves = [(i+1,j), (i-1,j), (i,j+1), (i,j-1), 
                     (i+1,j+1), (i+1,j-1), (i-1,j+1), (i-1,j-1)]
-        for move in king_moves:
-            r, c = move
-            if r >= 0 and r < 8 and c >= 0 and c < 8:
-                if self.get_current_board()[r][c] == 'blank' or self.get_current_board()[r][c].startswith(opposite_colour):
-                    # Check if move puts king in check
-                    possible_moves.append((position, (r, c)))
+        
+        board_copy = deepcopy(self)
+
+        if not self.is_king_in_check(position, piece):
+            for move in king_moves:
+                r, c = move
+                if r >= 0 and r < 8 and c >= 0 and c < 8:
+                    if self.get_current_board()[r][c] == 'blank' or self.get_current_board()[r][c].startswith(opposite_colour):
+                        # Check if move puts king in check
+                        possible_moves.append((position, (r, c)))
+        else:
+            # make copy of board to check if move allows king to get out of check
+            for move in king_moves:
+                r, c = move
+                if r >= 0 and r < 8 and c >= 0 and c < 8:
+                    board_copy = deepcopy(self)
+                    board_copy.apply_move([position, move])
+                    if not board_copy.is_king_in_check(move, piece):
+                        possible_moves.append((position, move))
 
         return possible_moves
+    
+    def get_king(self, colour):
+        pieces = self.get_white_pieces() if colour == "white" else self.get_black_pieces()
+
+        for piece in pieces:
+            piece_colour, piece_name = piece[0].split()
+            if piece_name == "king":
+                return piece
+
+    def is_king_in_check(self, king_position, king):
+        king_colour, piece_name = king[0].split()
+        opposite_colour = "white" if king_colour == "black" else "black"
+        # check if any opponent's piece can attack the king's current position
+        opposite_colour_pieces = self.get_white_pieces() if king_colour == "black" else self.get_black_pieces()
+
+        for piece in opposite_colour_pieces:
+            piece_colour, piece_name = piece[0].split()
+            if piece_name != "king":
+                moves = self.get_piece_moves(piece, opposite_colour)
+                for move in moves:
+                    start, end = move
+                    if end == king_position:
+                        return True
+                
+        return False
 
     def get_queen_moves(self, piece, colour):
         possible_moves = []
@@ -332,6 +406,11 @@ class ChessBoard:
         start_i, start_j = move[0]
         end_i, end_j = move[1]
 
+        # do not apply move if taking king
+        if self.get_current_board()[end_i][end_j] != "blank":
+            if self.get_current_board()[end_i][end_j].split()[1] == "king":
+                return
+
         piece_name = self.get_current_board()[start_i][start_j]
 
         if piece_name != "blank":
@@ -344,8 +423,17 @@ class ChessBoard:
             self.set_pieces()
 
 
-# chessboard = ChessBoard(example_squares)
+chessboard = ChessBoard(example_squares)
+# for piece in chessboard.get_white_pieces():
+#     if piece[0] == "white pawn":
+#         print(chessboard.get_white_pawn_moves(piece))
+for piece in chessboard.get_white_pieces():
+    if piece[0] == "white pawn":
+        print(chessboard.get_piece_moves(piece, "white"))
 
+# for piece in chessboard.get_black_pieces():
+#     if piece[0] == "black queen":
+#         print(chessboard.get_queen_moves(piece, "black"))
 # chessboard.apply_move([(7, 3), (1, 3)]) 
 # chessboard.apply_move([(0, 6), (6, 6)]) 
 # print(chessboard.get_capturable_pieces())
