@@ -45,7 +45,7 @@ class ChessBoard:
     def get_black_pieces(self):
         return self.black_pieces
 
-    def get_black_pawn_moves(self, piece):
+    def get_black_pawn_moves(self, piece, current_player: str):
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
@@ -66,26 +66,27 @@ class ChessBoard:
         if j < 7 and self.get_current_board()[i+1][j+1].startswith('white'):
             possible_moves.append((position, (i+1, j+1)))
         
-        # return possible_moves
-        # if not self.is_king_in_check(king_position, king):
-        #     return possible_moves
+        if current_player == "black":
+            if not self.is_king_in_check(king_position, king):
+                return possible_moves
         
-        return possible_moves
-        # # return possible_moves while king in check
-        # return self.is_move_legal_while_check(king_position, possible_moves)
+            # return possible_moves while king in check
+            return self.is_move_legal_while_check(king, king_position, possible_moves)
+        else:
+            return possible_moves
 
-    def is_move_legal_while_check(self, king_position, possible_moves):
+    def is_move_legal_while_check(self, king_piece, king_position, possible_moves):
         legal_moves = []
-        
+
         for move in possible_moves:
             board_copy = deepcopy(self)
             board_copy.apply_move(move)
-            if not board_copy.is_king_in_check(king_position, piece):
+            if not board_copy.is_king_in_check(king_position, king_piece):
                 legal_moves.append(move)
 
         return legal_moves
 
-    def get_white_pawn_moves(self, piece):
+    def get_white_pawn_moves(self, piece, current_player: str):
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
@@ -106,21 +107,24 @@ class ChessBoard:
         if j < 7 and self.get_current_board()[i-1][j+1].startswith('black'):
             possible_moves.append((position, (i-1, j+1)))
 
-        if not self.is_king_in_check(king_position, king):
+        if current_player == "white":
+            if not self.is_king_in_check(king_position, king):
+                return possible_moves
+            
+            # return possible_moves while king in check
+            return self.is_move_legal_while_check(king, king_position, possible_moves)
+        else:
             return possible_moves
-        
-        # return possible_moves while king in check
-        return self.is_move_legal_while_check(king_position, possible_moves)
 
-    def get_rook_moves(self, piece, colour):
+    def get_rook_moves(self, piece, requested_colour, current_player: str):
 
-        opposite_colour = "black" if colour == "white" else "white"
+        opposite_colour = "black" if requested_colour == "white" else "white"
 
         # Note: for some reason, get_pieces is failing because it is being called for both colours
         # need to fix this -> recursion
         # MAYBE: Implement whose turn it is and use this as a conditional before checking if king in check
 
-        king = self.get_king(colour)
+        king = self.get_king(requested_colour)
         king_position = king[1]
 
         possible_moves = []
@@ -162,12 +166,23 @@ class ChessBoard:
                 break
             else:
                 break
+        
+        if requested_colour == current_player:
+            if not self.is_king_in_check(king_position, king):
+                return possible_moves
+            
+            # return possible_moves while king in check
+            return self.is_move_legal_while_check(king, king_position, possible_moves)
+        else:
+            return possible_moves
 
-        return possible_moves
-
-    def get_bishop_moves(self, piece, colour):
-        opposite_colour = "black" if colour == "white" else "white"
+    def get_bishop_moves(self, piece, requested_colour, current_player: str):
+        opposite_colour = "black" if requested_colour == "white" else "white"
         possible_moves = []
+
+        king = self.get_king(requested_colour)
+        king_position = king[1]
+
         position = get_piece_coordinates(piece)
         i, j = position
         # Check possible moves in upper left direction
@@ -215,10 +230,21 @@ class ChessBoard:
                 break
             r, c = r+1, c+1
 
-        return possible_moves
+        if requested_colour == current_player:
+            if not self.is_king_in_check(king_position, king):
+                return possible_moves
+            
+            # return possible_moves while king in check
+            return self.is_move_legal_while_check(king, king_position, possible_moves)
+        else:
+            return possible_moves
 
-    def get_knight_moves(self, piece, colour):
-        opposite_colour = "black" if colour == "white" else "white"
+    def get_knight_moves(self, piece, requested_colour, current_player: str):
+        opposite_colour = "black" if requested_colour == "white" else "white"
+
+        king = self.get_king(requested_colour)
+        king_position = king[1]
+
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
@@ -231,7 +257,14 @@ class ChessBoard:
                 if self.get_current_board()[r][c] == 'blank' or self.get_current_board()[r][c].startswith(opposite_colour):
                     possible_moves.append((position, (r, c)))
 
-        return possible_moves
+        if requested_colour == current_player:
+            if not self.is_king_in_check(king_position, king):
+                return possible_moves
+            
+            # return possible_moves while king in check
+            return self.is_move_legal_while_check(king, king_position, possible_moves)
+        else:
+            return possible_moves
 
     def get_king_moves(self, piece, colour):
         opposite_colour = "black" if colour == "white" else "white"
@@ -280,7 +313,7 @@ class ChessBoard:
         for piece in opposite_colour_pieces:
             piece_colour, piece_name = piece[0].split()
             if piece_name != "king":
-                moves = self.get_piece_moves(piece, opposite_colour)
+                moves = self.get_piece_moves(piece, opposite_colour, king_colour)
                 for move in moves:
                     start, end = move
                     if end == king_position:
@@ -288,35 +321,36 @@ class ChessBoard:
                 
         return False
 
-    def get_queen_moves(self, piece, colour):
+    def get_queen_moves(self, piece, requested_colour, current_player):
         possible_moves = []
         position = get_piece_coordinates(piece)
         i, j = position
         # Check all possible king moves from current position
-        for move in self.get_rook_moves(piece, colour):
+        for move in self.get_rook_moves(piece, requested_colour, current_player):
             possible_moves.append(move)
-        for move in self.get_bishop_moves(piece, colour):
+        for move in self.get_bishop_moves(piece, requested_colour, current_player):
             possible_moves.append(move)
 
         return possible_moves
 
-    def get_piece_moves(self, piece, colour: str):
+    def get_piece_moves(self, piece, requested_colour: str, current_player: str):
+        
         match piece[0].split()[1]:
             case "pawn":
-                if colour == "white":
-                    return self.get_white_pawn_moves(piece)
+                if requested_colour == "white":
+                    return self.get_white_pawn_moves(piece, current_player)
                 else:
-                    return self.get_black_pawn_moves(piece)
+                    return self.get_black_pawn_moves(piece, current_player)
             case "bishop":
-                return self.get_bishop_moves(piece, colour)
+                return self.get_bishop_moves(piece, requested_colour, current_player)
             case "knight":
-                return self.get_knight_moves(piece, colour)
+                return self.get_knight_moves(piece, requested_colour, current_player)
             case "rook":
-                return self.get_rook_moves(piece, colour)
+                return self.get_rook_moves(piece, requested_colour, current_player)
             case "queen":
-                return self.get_queen_moves(piece, colour)
+                return self.get_queen_moves(piece, requested_colour, current_player)
             case "king":
-                return self.get_king_moves(piece, colour)
+                return self.get_king_moves(piece, requested_colour)
 
     def get_capturable_pieces(self, moves):
 
@@ -424,12 +458,12 @@ class ChessBoard:
 
 
 chessboard = ChessBoard(example_squares)
+# for piece in chessboard.get_black_pieces():
+#     if piece[0] == "black king":
+#         print(chessboard.get_piece_moves(piece, "black", "black"))
 # for piece in chessboard.get_white_pieces():
-#     if piece[0] == "white pawn":
-#         print(chessboard.get_white_pawn_moves(piece))
-for piece in chessboard.get_white_pieces():
-    if piece[0] == "white pawn":
-        print(chessboard.get_piece_moves(piece, "white"))
+#     if piece[0] == "white knight":
+#         print(chessboard.get_piece_moves(piece, "white", current_player="white"))
 
 # for piece in chessboard.get_black_pieces():
 #     if piece[0] == "black queen":

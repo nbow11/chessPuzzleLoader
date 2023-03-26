@@ -3,8 +3,8 @@ from ChessBoardUI import ChessBoardUI
 from chessBoardObject import ChessBoard
 from tkinter import filedialog
 from PIL import ImageTk, Image
-from testingFile import split_image, get_predicted_squares
-from chessBot import minimax_alpha_beta, get_legal_moves
+# from testingFile import split_image, get_predicted_squares
+from chessBot import minimax_alpha_beta, get_legal_moves, is_check_mate
 import random
 import itertools
 # from testingFile import get_predicted_squares
@@ -14,16 +14,16 @@ root = tk.Tk()
 
 # puzzle_squares = get_predicted_squares()
 
-# example_squares = [
-#     ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
-#     ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'white pawn'], 
-#     ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
-#     ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
-#     ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
-#     ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
-#     ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
-#     ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
-# ]
+example_squares = [
+    ['blank', 'blank', 'blank', 'blank', 'black king', 'black bishop', 'black rook', 'blank'], 
+    ['blank', 'black rook', 'blank', 'black knight', 'blank', 'blank', 'blank', 'blank'], 
+    ['black pawn', 'blank', 'blank', 'blank', 'black pawn', 'black pawn', 'blank', 'blank'], 
+    ['blank', 'black pawn', 'black pawn', 'blank', 'black pawn', 'blank', 'blank', 'black pawn'], 
+    ['blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank', 'blank'], 
+    ['blank', 'blank', 'blank', 'blank', 'blank', 'white knight', 'blank', 'blank'], 
+    ['white pawn', 'white pawn', 'white pawn', 'blank', 'blank', 'white pawn', 'white pawn', 'white pawn'], 
+    ['blank', 'blank', 'blank', 'white rook', 'white rook', 'blank', 'white king', 'blank']
+]
 
 CURRENT_PLAYER = True
 
@@ -31,36 +31,36 @@ chessboard = None
 
 board_image = None
 
-def open_image():
-    global board_image
-    file_path = filedialog.askopenfilename()
-    if file_path:
-        img = Image.open(file_path).convert("RGB")
-        img = img.resize((250, 250), Image.ANTIALIAS)
-        board_image = img
-        photo = ImageTk.PhotoImage(img)
-        image_label.config(image=photo)
-        image_label.image = photo  # Keep a reference to the image to prevent garbage collection
-        save_button.config(state=tk.NORMAL)
+# def open_image():
+#     global board_image
+#     file_path = filedialog.askopenfilename()
+#     if file_path:
+#         img = Image.open(file_path).convert("RGB")
+#         img = img.resize((250, 250), Image.ANTIALIAS)
+#         board_image = img
+#         photo = ImageTk.PhotoImage(img)
+#         image_label.config(image=photo)
+#         image_label.image = photo  # Keep a reference to the image to prevent garbage collection
+#         save_button.config(state=tk.NORMAL)
 
 predicted_squares = None
 
-def save_image():
-    global predicted_squares
-    squares = split_image(board_image=board_image)
-    predicted_squares = get_predicted_squares(squares)
-    for widget in root.winfo_children():
-        widget.destroy()
-    launch_GUI(predicted_squares)
+# def save_image():
+#     global predicted_squares
+#     squares = split_image(board_image=board_image)
+#     predicted_squares = get_predicted_squares(squares)
+#     for widget in root.winfo_children():
+#         widget.destroy()
+#     launch_GUI(predicted_squares)
 
-open_button = tk.Button(root, text="Open image", command=open_image)
-open_button.pack()
+# open_button = tk.Button(root, text="Open image", command=open_image)
+# open_button.pack()
 
-image_label = tk.Label(root)
-image_label.pack()
+# image_label = tk.Label(root)
+# image_label.pack()
 
-save_button = tk.Button(root, text="Confirm", command=save_image, state=tk.DISABLED)
-save_button.pack()
+# save_button = tk.Button(root, text="Confirm", command=save_image, state=tk.DISABLED)
+# save_button.pack()
 
 def launch_GUI(pieces):
     # Create the top panel for the chess board
@@ -102,6 +102,8 @@ def redraw():
 def button_click():
     redraw()
     root.after(2000, button_click)
+
+launch_GUI(example_squares)
 
 root.mainloop()
 # chessboard.apply_move([(0, 6), (3, 6)])
