@@ -46,11 +46,12 @@ def open_image():
 predicted_squares = None
 
 def save_image():
+    global predicted_squares
     squares = split_image(board_image=board_image)
     predicted_squares = get_predicted_squares(squares)
     for widget in root.winfo_children():
         widget.destroy()
-    # launch_GUI(predicted_squares)
+    launch_GUI(predicted_squares)
 
 open_button = tk.Button(root, text="Open image", command=open_image)
 open_button.pack()
@@ -66,9 +67,6 @@ def launch_GUI(pieces):
     global chessboard
     chessboard = ChessBoard(pieces)
     board_panel = ChessBoardUI(root)
-    
-    # FIXX THIS !!
-    print(chessboard.get_current_board())
 
     board_panel.draw_pieces(pieces)
     board_panel.pack(side=tk.TOP)

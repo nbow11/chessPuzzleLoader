@@ -4,7 +4,7 @@ import cv2
 import uuid
 
 # define input and output directories
-image_path = "newBoards/board7.png"
+image_path = "newBoards/24.png"
 
 def split_chessboard(image_path):
     # Load the image
