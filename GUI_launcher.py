@@ -67,6 +67,7 @@ def launch_GUI(pieces):
     chessboard = ChessBoard(pieces)
     board_panel = ChessBoardUI(root)
     
+    # FIXX THIS !!
     print(chessboard.get_current_board())
 
     board_panel.draw_pieces(pieces)
